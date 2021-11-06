@@ -1,4 +1,4 @@
-# Glücksfee: 
+# Glücksfee 
 
 Dieses Python-Skript implementiert ein Losverfahren zur fairen Zuweisung von interessierten SeminarteilnehmerInnen zu Seminaren. Beim Losverfahren wird die begrenzte Kapazität (Anzahl Plätze pro Seminar) berücksichtigt. Desweiteren berücksichtigt das Losverfahren, wieviele Seminare ein Teilnehmer bereits zugewiesen bekommen hat. Dazu wird die bisherige maximale Anzahl von zugewiesen Seminaren benutzt: `curMax`. Eine TeilnehmerIn `i` hat bereits `yi` viele Seminare zugewiesen bekommen. Dann wird die (unnormierte) Wahrscheinlichkeit, dass diese TeilnehmerIn einen Seminarplatz für das nächste Seminar zugewiesen bekommt, wie folgt berechnet:
 
@@ -63,3 +63,17 @@ optional arguments:
                         Gibt eine ausführliche Ausgabe auf der Konsole aus
                         (True or False). Default: True
 ```
+
+## Ausgabe des Programms
+Das Programm speichert das Ergebnis des Losverfahrens in einer Excel-Datei. Der Default-Name ist `output.xlsx`, aber es kann ein beliebiger Dateiname angegeben werden. Es stehen verschiedene Excel-Sheets zur Verfügung, um das Ergebnis des Losverfahrens darzustellen. 
+
+#### Seminar
+Für jedes angebotene Seminar gibt es eine Zeile. Die Spalte _Plaetze_ zeigt die zur Verfügung stehenden Seminarplätze für dieses Seminar an, d.h. die Eingabe aus der Inputdatei. Die Spalte _Teilnehmer_ gibt an, wieviele TeilnehmerInnen diesem Seminar zugewiesen wurden. Die Spalte _Anfragen_ zeigt an, wieviele TeilnehmerInnen sich für das Seminar angemeldet haben. Die Spalte _Zugewiesen_ gibt den Prozentsatz an, wieviele zur Verfügung stehende Seminarplätze für dieses Seminar zugewiesen wurden. In den darauffolgenden Spalten stehen die Namen der durch das Losverfahren bestimmten TeilnehmerInnen.
+
+#### Assignment
+
+#### Difference
+
+#### Stats_Person
+
+#### Parameters
