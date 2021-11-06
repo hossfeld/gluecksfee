@@ -16,7 +16,7 @@ Bei der Zuweisung werden die Seminare in aufsteigender Reihenfolge ihrer Beliebt
 Mit dieser Strategie wird gewährleistet, dass die zur Verfügung stehenden Seminarplätze möglichst gut ausgenutzt werden und so den SeminarteilnehmerInnen maximal viele Seminarplätze zuzuzweisen. Das Losverfahren berücksichtigt hierbei eine maximal Anzahl von Seminaren, die einem Seminarteilnehmer zugewiesen wird; der Default-Wert sind 999 Seminare.
 
 ## Eingabedatei
-Die Eingabedaten werden in einer Excel-Datei (siehe 'input.xlsx') angegeben und müssen sich in dem Excel-Sheet "registrierung" befinden. Die Spalten beinhalten die zur Verfügung stehenden Seminare. In der Beispieldatei sind dies die folgenden 10 Seminare:
+Die Eingabedaten werden in einer Excel-Datei (siehe ['input.xlsx'](https://github.com/hossfeld/gluecksfee/blob/main/input.xlsx)) angegeben und müssen sich in dem Excel-Sheet "registrierung" befinden. Die Spalten beinhalten die zur Verfügung stehenden Seminare. In der Beispieldatei sind dies die folgenden 10 Seminare:
 1. Python für Anfänger	
 2. Yoga	
 3. Tandemfahren	
