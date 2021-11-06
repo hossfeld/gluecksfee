@@ -71,9 +71,13 @@ Das Programm speichert das Ergebnis des Losverfahrens in einer Excel-Datei. Der 
 Für jedes angebotene Seminar gibt es eine Zeile. Die Spalte _Plaetze_ zeigt die zur Verfügung stehenden Seminarplätze für dieses Seminar an, d.h. die Eingabe aus der Inputdatei. Die Spalte _Teilnehmer_ gibt an, wieviele TeilnehmerInnen diesem Seminar zugewiesen wurden. Die Spalte _Anfragen_ zeigt an, wieviele TeilnehmerInnen sich für das Seminar angemeldet haben. Die Spalte _Zugewiesen_ gibt den Prozentsatz an, wieviele zur Verfügung stehende Seminarplätze für dieses Seminar zugewiesen wurden. In den darauffolgenden Spalten stehen die Namen der durch das Losverfahren bestimmten TeilnehmerInnen.
 
 #### Assignment
+Das Sheet _Assignment_ ist wie die Eingabedatei aufgebaut. In den Spalten finden sich die Seminare; jede Zeile spiegelt die Zuweisung für eine Person wider. Eine `1` bedeutet, dass die Person in der entsprechenden Zeile als TeilnehmerIn für das Seminar in der entsprechenden Spalte ausgewürfelt wurde.
 
 #### Difference
+Das Sheet _Difference_ ist wie die Eingabedatei aufgebaut. In den Spalten finden sich die Seminare; jede Zeile spiegelt die Zuweisung für eine Person wider. Eine `1` bedeutet, dass die Person in der entsprechenden Zeile als TeilnehmerIn für das Seminar in der entsprechenden Spalte ausgewürfelt wurde.  Eine `-1` bedeutet, dass die Person in der entsprechenden Zeile sich als TeilnehmerIn für das Seminar angemeldet hatte, allerdings wurde der TeilnehmerIn kein Platz ausgewürfelt (aufgrund der Beschränkung der Anzahl Plätze pro Seminar bzw. der maximalen Anzahl von Seminaren pro Teilnehmer).
 
 #### Stats_Person
+Das Sheet _Stats_Person_ gibt eine Statistik der TeilnehmerInnen an. Die Spalte _requested_ zeigt an, für wieviele Seminare sich die TeilnehmerIn angemeldet hat. Die Spalte _assigned_ gibt an, wieviele Seminar für diese Person ausgewürfelt wurden durch das Losverfahren. Die Spalte _ratio_ gibt die Prozentzahl an, wieviele Seminare relativ zu den registrierten ausgewürfelt wurden. 
 
 #### Parameters
+Die Eingabeparameter werden in diesem Sheet festgehalten. Insbesondere wird hier der "Seed" für den Zufallszahlengenerator gespeichert, um die Reproduzierbarkeit zu gewährleisten. 
