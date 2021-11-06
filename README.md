@@ -17,27 +17,35 @@ Mit dieser Strategie wird gewährleistet, dass die zur Verfügung stehenden Semi
 
 ## Eingabedatei
 Die Eingabedaten werden in einer Excel-Datei (siehe 'input.xlsx') angegeben und müssen sich in dem Excel-Sheet "registrierung" befinden. Die Spalten beinhalten die zur Verfügung stehenden Seminare. In der Beispieldatei sind dies die folgenden 10 Seminare:
-* Python für Anfänger	
-* Yoga	
-* Tandemfahren	
-* Hundeerziehung	
-* Vegan kochen	
-* Reggae tanzen	
-* Informatik Einführung	
-* Klimaneutralität	
-* Herbstlaubbastelarbeit	
-* Moderation von Seminaren
+1. Python für Anfänger	
+2. Yoga	
+3. Tandemfahren	
+4. Hundeerziehung	
+5. Vegan kochen	
+6. Reggae tanzen	
+7. Informatik Einführung	
+8. Klimaneutralität	
+9. Herbstlaubbastelarbeit	
+10. Moderation von Seminaren
 
 Für jede registrierte TeilnehmerIn gibt es eine Zeile. Eine "1" gibt an, dass sich die TeilnehmerIn für das Seminar registriert hat. In der Beispieldatei hat sich Mia für 4 Seminare angemeldet: Python für Anfänger, Yoga, Tandemfahren, Herbstlaubbastelarbeit.
 
 Um die Anzahl der zur Verfügung stehenden Plätze pro Seminar anzugeben, gibt es eine Extrazeile, die "Plaetze" anzugeben ist. Die Anzahl der Plätze pro Seminar kann variabel angegeben werden, wie es in der Beispieldatei angegeben ist. Wird diese Zeile weggelassen, werden pro Seminar standardmäßig 14 Plätze angenommen.
 
+_Beispiel-Datei: input.xlsx:_
+Person	| Python für Anfänger | Yoga | Tandemfahren | Hundeerziehung | Vegan kochen | Reggae tanzen | Informatik Einführung | Klimaneutralität | Herbstlaubbastelarbeit | Moderation von Seminaren
+-----|-----|-----|-----|-----|-----|-----|-----|-----|-----|-----
+Plaetze | 17 | 15 | 14 | 14 | 14 | 14 | 14 | 14 | 14 | 10
+Mia | 1 | 1 | 1 | 0 | 0 | 0 | 0 | 0 | 1 | 0
+Emma | 0 | 1 | 1 | 1 | 0 | 1 | 1 | 0 | 0 | 0
+Hannah | 1 | 0 | 1 | 0 | 1 | 0 | 0 | 0 | 1 | 0
 
 ## Ausführung des Programms
 Das Programm wird in einer Konsole aufgerufen. Hierbei können verschiedene Parameter angegeben werden. Wichtig ist hierbei der `SEED`, der den [Zufallszahlengenerator](https://de.wikipedia.org/wiki/Zufallszahlengenerator) für das Losverfahren initialisiert. Bei jedem Start des Losverfahrens mit dem gleichem Startwert (engl. seed) wird die gleiche Zufallszahlenfolge erzeugt, weshalb diese Zufallszahlen reproduziert werden können. Damit ist das Losverfahren auch im Nachhinein noch nachvollziehbar und reproduzierbar. Die erzeugten Zufallszahlen dienen dazu, die Seminarteilnehmer entsprechend der Wahrscheinlichkeiten (s. oben) zuzuweisen.
 
 
-`SeKo Gluecksfee zur Seminarteilnehmer Auslosung
+```
+SeKo Gluecksfee zur Seminarteilnehmer Auslosung
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -54,4 +62,4 @@ optional arguments:
   -v [VERBOSE], --verbose [VERBOSE]
                         Gibt eine ausführliche Ausgabe auf der Konsole aus
                         (True or False). Default: True
-`                        
+```
