@@ -1,0 +1,2 @@
+# gluecksfee
+Losverfahren für Seminare
