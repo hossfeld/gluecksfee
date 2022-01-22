@@ -11,11 +11,23 @@ Falls einer TeilnehmerIn `i` noch kein Seminar zugewiesen wurde, wird dies geson
 Die Wahrscheinlichkeiten über alle Teilnehmer werden dann normiert: `p = p/p.sum()`
 
 _Beispiel: Es wurde bereits einige Seminare zugewiesen, als nächstes kommt das Seminar 1 dran:_
-    user 39 has 3 seminars assigned: [3 5 9] and requested [0 1 2 3 5 9]; prob. for next seminar 0.27%
-    user 41 has 2 seminars assigned: [2 4] and requested [0 1 2 3 4]; prob. for next seminar 2.96%
-    user 43 has 0 seminars assigned: [] and requested [0 1]; prob. for next seminar 8.33%
-    user 44 has 1 seminars assigned: 4 and requested [0 1 4]; prob. for next seminar 5.65%
-    
+    user 19 has 2 seminars assigned: [5 8] and requested [0 1 2 4 5 6 8]; prob. for next seminar 0.07%
+    user 22 has 1 seminars assigned: 6 and requested [0 1 3 4 6]; prob. for next seminar 0.13%
+    user 23 has 0 seminars assigned: [] and requested [0 3 4]; prob. for next seminar 19.71%
+
+	Die Wahrscheinlichkeiten in den Zuweisungsrunden sehen wie folgt aus. `p_0` ist die Wahrscheinlichkeit für TeilnehmerInnen, die bisher noch kein Seminar zugewiesen bekommen hat. `p_i` ist die Wahrscheinlichkeit für TeilnehmerInnen, die bisher `i` Seminare zugewiesen bekommen haben. `p_*=100%` zeigt an, dass weniger Anfragen als Plätze vorhanden sind und alle zugewiesen werden. In Klammern sind die Anzahl der zugewiesenen TeilnehmerInnen angegeben.
+	
+	Round 0: Seminar "Python für Anfänger A" p_*=100% (8); 
+	Round 1: Seminar "Python für Anfänger B" p_*=100% (8); 
+	Round 2: Seminar "Tandemfahren" p_*=100% (8); 
+	Round 3: Seminar "Hundeerziehung" p_*=100% (9); 
+	Round 4: Seminar "Vegan kochen" p_*=100% (11); 
+	Round 5: Seminar "Informatik Einführung A" p_0=19.7109% (5); p_1=0.1314% (9); p_2=0.0657% (4); 
+	Round 6: Seminar "Informatik Einführung B" p_0=16.4384% (6); p_1=0.1096% (8); p_2=0.0548% (9); 
+	Round 7: Seminar "Klimaneutralität A" p_0=31.9234% (3); p_1=0.2394% (9); p_2=0.1596% (12); p_3=0.0798% (2); 
+	Round 8: Seminar "Klimaneutralität B" p_0=85.4701% (1); p_1=0.6410% (11); p_2=0.4274% (15); p_3=0.2137% (5); 
+	Round 9: Seminar "Klimaneutralität C" p_1=5.8824% (7); p_2=3.9216% (12); p_3=1.9608% (6); 	
+		
 Bei der Zuweisung werden die Seminare in aufsteigender Reihenfolge ihrer Beliebtheit durchgegangen. Zuerst wird mit dem Seminar mit der geringsten Nachfrage begonnen. 
 Falls ein Seminar mehr Plätze als Anfragen hat, werden alle TeilnehmerInnen dem Seminar zugewiesen.
 

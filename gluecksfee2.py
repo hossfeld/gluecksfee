@@ -135,7 +135,7 @@ if not os.path.isfile(args.input):
     
 WS, x, userid, numParticipantsPerSeminar, inhaltlich = readExcelFile(file=args.input)  # input2021     input2021_noPlaetze    input2021_twoPlaetze   input2021_noPlaetzeNoInhalt
 semTypes = hashSemTypes(inhaltlich)
-
+seminarNames = WS.columns[1:]
 #%% Initialize Random Generator
 hash = hashlib.sha256(args.seed.encode('utf-8'))
 seed = np.sum(np.frombuffer(hash.digest(), dtype='uint32'))
@@ -216,7 +216,7 @@ def assignmentMatrix(matrix,numParticipantsPerSeminar, semTypes, inhaltlich,
             
     if verbose:
         for k, (probs, assSems, nAss) in enumerate(probsPerRound):
-            s = f'Round {k}: '
+            s = f'Round {k}: Seminar "{seminarNames[k]}" '
             for i,p in enumerate(probs):
                 s+=f'p_{assSems[i]}={p*100:.4f}% ({nAss[i]}); '
             print(s)
@@ -227,7 +227,6 @@ def assignmentMatrix(matrix,numParticipantsPerSeminar, semTypes, inhaltlich,
 y = assignmentMatrix(x,numParticipantsPerSeminar, semTypes, inhaltlich,                      
                      maxSeminarsAssignedPerParticipant=args.maximum,                      
                      seed=seed, verbose=args.verbose)
-seminarNames = WS.columns[1:]
 #%% Generate the data for the output file: seminar view
 if args.verbose: print('\n')
 for i in range(len(userid)):    
@@ -252,7 +251,7 @@ for i in range(y.shape[1]):
         s = "-- keine --"
     
     if args.verbose:         
-        print(f'Seminar {seminarNames[i]} mit {len(tmp)} Teilnehmern bei {np.sum(x[:,i])} Registrierungen (max. {numParticipantsPerSeminar[i]}): {s}\n')
+        print(f'Seminar {seminarNames[i]} mit {len(tmp)} Teilnehmern bei {np.sum(x[:,i])} Registrierungen (max. {numParticipantsPerSeminar[i]}): {s}')
     
 #%% Store the data in a lista
 seminar = []
