@@ -11,11 +11,12 @@ Falls einer TeilnehmerIn `i` noch kein Seminar zugewiesen wurde, wird dies geson
 Die Wahrscheinlichkeiten über alle Teilnehmer werden dann normiert: `p = p/p.sum()`
 
 _Beispiel: Es wurde bereits einige Seminare zugewiesen, als nächstes kommt das Seminar 1 dran:_
+
     user 19 has 2 seminars assigned: [5 8] and requested [0 1 2 4 5 6 8]; prob. for next seminar 0.07%
     user 22 has 1 seminars assigned: 6 and requested [0 1 3 4 6]; prob. for next seminar 0.13%
     user 23 has 0 seminars assigned: [] and requested [0 3 4]; prob. for next seminar 19.71%
 
-	Die Wahrscheinlichkeiten in den Zuweisungsrunden sehen wie folgt aus. `p_0` ist die Wahrscheinlichkeit für TeilnehmerInnen, die bisher noch kein Seminar zugewiesen bekommen hat. `p_i` ist die Wahrscheinlichkeit für TeilnehmerInnen, die bisher `i` Seminare zugewiesen bekommen haben. `p_*=100%` zeigt an, dass weniger Anfragen als Plätze vorhanden sind und alle zugewiesen werden. In Klammern sind die Anzahl der zugewiesenen TeilnehmerInnen angegeben.
+Die Wahrscheinlichkeiten in den Zuweisungsrunden sehen wie folgt aus. `p_0` ist die Wahrscheinlichkeit für TeilnehmerInnen, die bisher noch kein Seminar zugewiesen bekommen hat. `p_i` ist die Wahrscheinlichkeit für TeilnehmerInnen, die bisher `i` Seminare zugewiesen bekommen haben. `p_*=100%` zeigt an, dass weniger Anfragen als Plätze vorhanden sind und alle zugewiesen werden. In Klammern sind die Anzahl der zugewiesenen TeilnehmerInnen angegeben.
 	
 	Round 0: Seminar "Python für Anfänger A" p_*=100% (8); 
 	Round 1: Seminar "Python für Anfänger B" p_*=100% (8); 
