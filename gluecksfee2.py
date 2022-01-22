@@ -31,6 +31,8 @@ import numpy as np
 import os.path 
 
 from pandas import read_excel, DataFrame, ExcelWriter
+from functools import reduce 
+from operator import iconcat
 
 #%% Parse Input Arguments
 now = datetime.now()
@@ -62,7 +64,7 @@ parser.add_argument("-m", "--maximum",
                     default=999)
 
 parser.add_argument("-v", "--verbose",  type=str2bool, nargs='?',
-                        const=True, default=False,
+                        const=True, default=True,
                     help="Gibt eine ausführliche Ausgabe auf der Konsole aus (True or False). Default: True")
 
 args = parser.parse_args()
@@ -74,12 +76,65 @@ print(f'Ausgabe-Datei: {args.output}')
 print(f'Maximale #Seminare: {args.maximum}')
 print(f'Verbose: {args.verbose}\n')
 
+#%%
+def hashSemTypes(inhaltlich):
+    semtypes = {}
+    for u in np.unique(inhaltlich):
+        semtypes[u] = np.argwhere(inhaltlich == u).flatten()
+    return semtypes
+#%%
+def readExcelFile(file='input2021.xlsx', defaultNumberParticipantsPerSeminar=12):
+    
+    WS = read_excel(file, sheet_name='registrierung') 
+    
+    def checkPlaetze(v):
+        if isinstance(v, int):
+            return v==-99
+        else:
+            return v.lower() in ['platz','plaetze','plätze']
+        
+    def checkInhaltlich(v):
+        if isinstance(v, int):
+            return v==-100
+        else:
+            return v.lower() in ['inhalt','inhaltlich','content']
+
+    def getValuesForLabel_andRemove(fun=checkPlaetze, warning='Plaetze', defaultVal=12):
+        s = (WS.iloc[:, 0]).apply(fun)
+        res = np.where(s)[0]
+        if len(res)==0: # zeile fehlt
+            h = [defaultVal]*(WS.shape[1]-1)    
+            dropIndex = []
+        elif len(res)==1: # genau 1 zeile existiert
+            h = WS.iloc[res[0] ,1:].values
+            dropIndex = [res[0]]
+            #WS.drop(WS.index[res[0]], inplace=True)
+        else: # several entries        
+            raise ValueError(f'Several rows for {warning}: Row {res+2}!')
+            
+        return h, dropIndex
+
+
+    numPlaetzeFromExcel, dropIndex1 = getValuesForLabel_andRemove()      
+    inhaltlich, dropIndex2 = getValuesForLabel_andRemove(checkInhaltlich, warning='inhaltlich', defaultVal=None)    
+    
+    w = reduce(iconcat,[dropIndex1, dropIndex2],[])
+    WS.drop(WS.index[w], inplace=True)
+    
+        
+    matrix = np.array(WS)
+    x = matrix[:,1:].astype('int')
+    userid = matrix[:,0]
+        
+
+    
+    return WS, x, userid, numPlaetzeFromExcel, inhaltlich
 #%% Read Input File
 if not os.path.isfile(args.input):
-    raise FileNotFoundError(args.input)    
-
-WS = read_excel(args.input, sheet_name='registrierung')
-x = np.array(WS)
+    raise FileNotFoundError(args.input)
+    
+WS, x, userid, numParticipantsPerSeminar, inhaltlich = readExcelFile(file=args.input)  # input2021     input2021_noPlaetze    input2021_twoPlaetze   input2021_noPlaetzeNoInhalt
+semTypes = hashSemTypes(inhaltlich)
 
 #%% Initialize Random Generator
 hash = hashlib.sha256(args.seed.encode('utf-8'))
@@ -87,81 +142,91 @@ seed = np.sum(np.frombuffer(hash.digest(), dtype='uint32'))
 if args.verbose:
     print(f'Random Number Generation initialisiert mit {seed}')
 #rng = np.random.RandomState(seed)
-#%% Check if number of Plaetze is provided in the input file
-def checkPlaetze(v):
-    if isinstance(v, int):
-        return v==-99
-    else:
-        return v.lower() in ['platz','plaetze','plätze']
 
-try:
-    tmp = next(i for i,v in enumerate(x[:,0]) if checkPlaetze(v))
-    numParticipantsPerSeminar = x[tmp,1:]
-    x = np.delete(x, tmp, axis=0)
-except StopIteration:
-    numParticipantsPerSeminar = [14]*(x.shape[1]-1)
 
 #%% Assignment of people to requested seminars: there are several more options implemented, but we are using here the default values only
 # x[user_id, seminar_id]
-def assignmentMatrix(matrix, whichOrder=3, weightAssignedPlaces=1, rel=False, numParticipantsPerSeminar=numParticipantsPerSeminar, maxSeminarsAssignedPerParticipant=int(args.maximum), seed=seed, verbose=args.verbose):
-    x = matrix[:,1:].astype('int')
-    userid = matrix[:,0]
+def assignmentMatrix(matrix,numParticipantsPerSeminar, semTypes, inhaltlich,                      
+                     maxSeminarsAssignedPerParticipant=args.maximum, 
+                     at_least_one_seminar_prob_factor = 100.0,
+                     seed=seed, addToLowest=1.0, verbose=False):
+    
+    x = matrix.copy()
     
     np.random.seed(seed)
-    y = np.zeros_like(x) 
+    y = np.zeros_like(x) # assignment
     n, numSeminars = y.shape
+        
+    #I = np.argsort(x.sum(axis=0)) # smallest seminars first
+    I = list(range(numSeminars)) # list of seminars which need to be assigned
     
-    if whichOrder==3: # smallest seminars first, but relative
-        I = np.argsort(x.sum(axis=0)/numParticipantsPerSeminar) 
-    elif whichOrder==1: # smallest seminars first
-        I = np.argsort(x.sum(axis=0)) 
-    elif whichOrder==2: # largest seminars first
-        I = np.argsort(x.sum(axis=0))[::-1]
-    else: # order of seminars
-        I = range(numSeminars)
-        
+    
     if verbose:
-        print(f'Seminarreihenfolge: {I}')
+        probsPerRound = []
+    #print(f'Seminarreihenfolge: {I}')
         
-    for i in I: 
+    while len(I)>0:
+        # determine seminar from remaining with minimum number of requests
+        r = x[:,I].sum(axis=0) # number of requests r_i for i in I
+        w = np.argmin(r) # determine next (least popular) seminar out of I
+        i = I.pop(w) # seminar i is returned and removed from list I
+        
         registeredUsers = np.squeeze(np.argwhere(x[:,i]>0))
         
-        #print(maxSeminarsAssignedPerParticipant)
         alreadyMaximumAssignedSeminars = np.squeeze(np.argwhere(y.sum(axis=1) >= maxSeminarsAssignedPerParticipant ))
         registeredUsers = np.setdiff1d(registeredUsers, alreadyMaximumAssignedSeminars)
         
         if len(registeredUsers) <= numParticipantsPerSeminar[i]:
             y[registeredUsers,i] = 1
+            
+            for s in semTypes[inhaltlich[i]]: # delete other, content-wise related seminars from user requests
+                x[registeredUsers,s] = 0
             if verbose:
                     print(f'seminar {i} ({numParticipantsPerSeminar[i]} places): registrations {len(registeredUsers)}')
                     print(f'   registered users: {registeredUsers}')
                     print('   Wahrscheinlichkeit: alle TN zugewiesen')
+                    probsPerRound.append(([1],['*'],[len(registeredUsers)]))
         else:
-            if weightAssignedPlaces==1:
-                curMax = np.max(y[registeredUsers,:].sum(axis=1))
-                if rel:
-                    p = (1-y[registeredUsers,:].sum(axis=1)/x[registeredUsers,:].sum(axis=1))
-                else:
-                    p = (curMax+0.1-y[registeredUsers,:].sum(axis=1))                    
-                p = p/p.sum()
-                                
-                select = np.random.choice(registeredUsers, replace=False, size=numParticipantsPerSeminar[i], p=p)
-            else:
-                p = np.ones(len(registeredUsers))
-                p = p/p.sum()
-                select = np.random.choice(registeredUsers, replace=False, size=numParticipantsPerSeminar[i])
+            
+            assigned_places_so_far = y[registeredUsers,:].sum(axis=1)
+            curMax = np.max(assigned_places_so_far)
+            
+            p = (curMax+addToLowest-assigned_places_so_far)                    
+            
+            noseminarsofar = assigned_places_so_far==0
+            p[noseminarsofar] *= at_least_one_seminar_prob_factor
+            p = p/p.sum()
+            
+            select = np.random.choice(registeredUsers, replace=False, size=numParticipantsPerSeminar[i], p=p)
+        
+            if verbose:
+                bi = np.bincount(assigned_places_so_far)
+                probsPerRound.append((np.unique(p)[::-1],np.unique(assigned_places_so_far), bi[bi>0]) )
+            
             if verbose:                
                 print(f'seminar {i} ({numParticipantsPerSeminar[i]} places): registrations {len(registeredUsers)}')
                 print(f'    registered users: {registeredUsers}')
-                for (theuser,theass,thereq,theprob) in zip(registeredUsers, y[registeredUsers,:], x[registeredUsers,:],p):
+                for (theuser,theass,thereq,theprob) in zip(registeredUsers, y[registeredUsers,:], matrix[registeredUsers,:],p):
                     print(f'    user {theuser} has {theass.sum()} seminars assigned: {np.squeeze(np.argwhere(theass))} and requested {np.squeeze(np.argwhere(thereq))}; prob. for next seminar {theprob*100:.2f}%')
                 print(f'    Zugewiesene Teilnehmer for seminar {i}: ({len(select)}) people = {np.sort(select)}')
             y[select,i] = 1
-    return y, userid
+            
+            for s in semTypes[inhaltlich[i]]: # delete other, content-wise related seminars from user requests
+                x[select,s] = 0
+            
+    if verbose:
+        for k, (probs, assSems, nAss) in enumerate(probsPerRound):
+            s = f'Round {k}: '
+            for i,p in enumerate(probs):
+                s+=f'p_{assSems[i]}={p*100:.4f}% ({nAss[i]}); '
+            print(s)
+    return y
 
 
 #%% Let's do the assignment and extract the seminar names
-y, userid = assignmentMatrix(x)
+y = assignmentMatrix(x,numParticipantsPerSeminar, semTypes, inhaltlich,                      
+                     maxSeminarsAssignedPerParticipant=args.maximum,                      
+                     seed=seed, verbose=args.verbose)
 seminarNames = WS.columns[1:]
 #%% Generate the data for the output file: seminar view
 if args.verbose: print('\n')
@@ -185,7 +250,9 @@ for i in range(y.shape[1]):
         s = np.array2string(userid[tmp], separator=', ')
     else:
         s = "-- keine --"
-    if args.verbose: print(f'Seminar {WS.columns[i+1]} mit {len(tmp)} Teilnehmern bei {np.sum(x[1:,i+1])} Registrierungen (max. {numParticipantsPerSeminar[i]}): {s}')
+    
+    if args.verbose:         
+        print(f'Seminar {seminarNames[i]} mit {len(tmp)} Teilnehmern bei {np.sum(x[:,i])} Registrierungen (max. {numParticipantsPerSeminar[i]}): {s}\n')
     
 #%% Store the data in a lista
 seminar = []
@@ -202,7 +269,7 @@ df = DataFrame(seminar, index=seminarNames, columns=np.arange(1,y.sum(axis=0).ma
 df.insert(0,'Plaetze',numParticipantsPerSeminar)
 df.insert(1,'Teilnehmer',y.sum(axis=0))
 
-anfragen = x[:,1:].astype('int').sum(axis=0)
+anfragen = x.astype('int').sum(axis=0)
 df.insert(2,'Anfragen', anfragen)
 df.insert(3,'Zugewiesen', y.sum(axis=0)/anfragen)
 #%% Output the data to Excel sheets: Seminar sheet and Assignment sheet
@@ -222,12 +289,12 @@ df = DataFrame(y, index=userid,  columns=seminarNames)
 df.to_excel(writer,sheet_name='Assignment', index=True, index_label='Person')
 
 #%% Output the data to Excel sheets: Difference sheet
-z = 2*y-x[:,1:]
+z = 2*y-x
 df = DataFrame(z, index=userid, columns=seminarNames)
 df.to_excel(writer,sheet_name='Difference', index=True, index_label='Person')
 
 #%% Output the data to Excel sheets: Stats_Person sheet
-v = x[:,1:].sum(axis=1).astype('int')
+v = x.sum(axis=1).astype('int')
 z = np.stack((v, y.sum(axis=1), y.sum(axis=1)/v ) )
 df = DataFrame(z.T, index=userid, columns=['requested','assigned', 'ratio'])
 df.to_excel(writer,sheet_name='Stats_Person', index=True, index_label='Person')

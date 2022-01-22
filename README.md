@@ -2,7 +2,11 @@
 
 Dieses Python-Skript implementiert ein Losverfahren zur fairen Zuweisung von interessierten SeminarteilnehmerInnen zu Seminaren. Beim Losverfahren wird die begrenzte Kapazität (Anzahl Plätze pro Seminar) berücksichtigt. Desweiteren berücksichtigt das Losverfahren, wieviele Seminare ein Teilnehmer bereits zugewiesen bekommen hat. Dazu wird die bisherige maximale Anzahl von zugewiesen Seminaren benutzt: `curMax`. Eine TeilnehmerIn `i` hat bereits `yi` viele Seminare zugewiesen bekommen. Dann wird die (unnormierte) Wahrscheinlichkeit, dass diese TeilnehmerIn einen Seminarplatz für das nächste Seminar zugewiesen bekommt, wie folgt berechnet:
 
-`pi = curMax+0.1-yi`
+`pi = curMax+1-yi`
+
+Falls einer TeilnehmerIn `i` noch kein Seminar zugewiesen wurde, wird dies gesondert berücksichtigt und die Wahrscheinlichkeit entsprechend erhöht. Dies führt dazu, dass die Anzahl der TeilnehmerInnen mit mind. einem zugewiesenen Seminar maximiert wird.
+
+`pi = pi*100 = (curMax+1)*100`
 
 Die Wahrscheinlichkeiten über alle Teilnehmer werden dann normiert: `p = p/p.sum()`
 
@@ -12,29 +16,35 @@ _Beispiel: Es wurde bereits einige Seminare zugewiesen, als nächstes kommt das 
     user 43 has 0 seminars assigned: [] and requested [0 1]; prob. for next seminar 8.33%
     user 44 has 1 seminars assigned: 4 and requested [0 1 4]; prob. for next seminar 5.65%
     
-Bei der Zuweisung werden die Seminare in aufsteigender Reihenfolge ihrer Beliebtheit durchgegangen. Zuerst wird mit dem Seminar mit der geringsten Nachfrage begonnen. Bei der Sortierung wird die relative Nachfrage benutzt: relative_Nachfrage = Anzahl_der_Registierungen / Anzahl_Seminarplätze
-Mit dieser Strategie wird gewährleistet, dass die zur Verfügung stehenden Seminarplätze möglichst gut ausgenutzt werden und so den SeminarteilnehmerInnen maximal viele Seminarplätze zuzuzweisen. Das Losverfahren berücksichtigt hierbei eine maximal Anzahl von Seminaren, die einem Seminarteilnehmer zugewiesen wird; der Default-Wert sind 999 Seminare.
+Bei der Zuweisung werden die Seminare in aufsteigender Reihenfolge ihrer Beliebtheit durchgegangen. Zuerst wird mit dem Seminar mit der geringsten Nachfrage begonnen. 
+Falls ein Seminar mehr Plätze als Anfragen hat, werden alle TeilnehmerInnen dem Seminar zugewiesen.
+
+Mit dieser Zuweisungsstrategie wird gewährleistet, dass die zur Verfügung stehenden Seminarplätze möglichst gut ausgenutzt werden und so den SeminarteilnehmerInnen maximal viele Seminarplätze zuzuzweisen. Das Losverfahren berücksichtigt hierbei eine maximal Anzahl von Seminaren, die einem Seminarteilnehmer zugewiesen wird; der Default-Wert sind 999 Seminare. Die erwartete Fairness des Verfahrens ist nah am theoretischen Optimum. Desweiteren wird die Anzahl der TeilnehmerInnen mit mind. einem zugewiesenen Seminar maximiert. 
 
 ## Eingabedatei
 Die Eingabedaten werden in einer Excel-Datei (siehe ['input.xlsx'](https://github.com/hossfeld/gluecksfee/blob/main/input.xlsx)) angegeben und müssen sich in dem Excel-Sheet "registrierung" befinden. Die Spalten beinhalten die zur Verfügung stehenden Seminare. In der Beispieldatei sind dies die folgenden 10 Seminare:
-1. Python für Anfänger	
-2. Yoga	
-3. Tandemfahren	
-4. Hundeerziehung	
-5. Vegan kochen	
-6. Reggae tanzen	
-7. Informatik Einführung	
-8. Klimaneutralität	
-9. Herbstlaubbastelarbeit	
-10. Moderation von Seminaren
+1. Python für Anfänger A
+2. Python für Anfänger B
+3. Tandemfahren
+4. Hundeerziehung
+5. Vegan kochen
+6. Informatik Einführung A
+7. Informatik Einführung B
+8. Klimaneutralität A
+9. Klimaneutralität B
+10. Klimaneutralität C
 
-Für jede registrierte TeilnehmerIn gibt es eine Zeile. Eine "1" gibt an, dass sich die TeilnehmerIn für das Seminar registriert hat. In der Beispieldatei hat sich Mia für 4 Seminare angemeldet: Python für Anfänger, Yoga, Tandemfahren, Herbstlaubbastelarbeit.
+Für jede registrierte TeilnehmerIn gibt es eine Zeile. Eine "1" gibt an, dass sich die TeilnehmerIn für das Seminar registriert hat. In der Beispieldatei hat sich Mia für 4 Seminare angemeldet: Python für Anfänger A, Python für Anfänger B, Tandemfahren, Klimaneutralität B. 
+
+Manche Seminare werden zu verschiedenen Zeiten angeboten, wie z.B. "Python für Anfänger A" und "Python für Anfänger B". Um anzugeben, dass Seminar inhaltlich identisch sind, gibt es eine Extrazeile "inhaltlich" mit der inhaltlich identische Seminare angegeben werden. In diesem Fall würde Mia höchstens einer der beiden Python-Seminare zugewiesen werden, aber niemals mehreren inhaltlich identischen Seminaren.
 
 Um die Anzahl der zur Verfügung stehenden Plätze pro Seminar anzugeben, gibt es eine Extrazeile, die "Plaetze" anzugeben ist. Die Anzahl der Plätze pro Seminar kann variabel angegeben werden, wie es in der Beispieldatei angegeben ist. Wird diese Zeile weggelassen, werden pro Seminar standardmäßig 14 Plätze angenommen.
 
 _Beispiel-Datei: input.xlsx:_
 Person	| Python für Anfänger | Yoga | Tandemfahren | Hundeerziehung | Vegan kochen | Reggae tanzen | Informatik Einführung | Klimaneutralität | Herbstlaubbastelarbeit | Moderation von Seminaren
+Person 	| Python für Anfänger A	|  Python für Anfänger B	|  Tandemfahren	|  Hundeerziehung	|  Vegan kochen	|  Informatik Einführung A	|  Informatik Einführung B	|  Klimaneutralität A	|  Klimaneutralität B	| Klimaneutralität C
 -----|-----|-----|-----|-----|-----|-----|-----|-----|-----|-----
+inhaltlich |  1 | 	1 | 2 | 3 | 4 | 5 | 5 | 6 | 6 | 6
 Plaetze | 17 | 15 | 14 | 14 | 14 | 14 | 14 | 14 | 14 | 10
 Mia | 1 | 1 | 1 | 0 | 0 | 0 | 0 | 0 | 1 | 0
 Emma | 0 | 1 | 1 | 1 | 0 | 1 | 1 | 0 | 0 | 0
