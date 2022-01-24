@@ -34,6 +34,7 @@ from pandas import read_excel, DataFrame, ExcelWriter
 from functools import reduce 
 from operator import iconcat
 
+import numbers
 #%% Parse Input Arguments
 now = datetime.now()
 
@@ -248,10 +249,13 @@ def waitingPlacesMatrix(matrix,numParticipantsPerSeminar, semTypes, inhaltlich, 
         i = I.pop(w) # seminar i is returned and removed from list I
         
         registeredUsers = np.squeeze(np.argwhere(x[:,i]>0))
-
-        if len(registeredUsers) == 0:
+        #print(registeredUsers)
+        #print(registeredUsers.size)
+        
+        if registeredUsers.size == 0:
             order[ seminarNames[i] ] = []
-            
+        elif registeredUsers.size == 1:
+            order[ seminarNames[i] ] = [registeredUsers]
         else:
             assigned_places_so_far = y[registeredUsers,:].sum(axis=1)+preAssigned[registeredUsers]
             curMax = np.max(assigned_places_so_far)
@@ -262,10 +266,10 @@ def waitingPlacesMatrix(matrix,numParticipantsPerSeminar, semTypes, inhaltlich, 
             p[noseminarsofar] *= at_least_one_seminar_prob_factor
             p = p/p.sum()
             
-            select = np.random.choice(registeredUsers, replace=False, size=len(registeredUsers), p=p)
+            select = np.random.choice(registeredUsers, replace=False, size=registeredUsers.size, p=p)
         
             #y[select,i] = 1
-            y[select,i] = (len(registeredUsers)-np.arange(len(registeredUsers)))/len(registeredUsers)
+            y[select,i] = (registeredUsers.size-np.arange(registeredUsers.size))/registeredUsers.size
             
             order[ seminarNames[i] ] = userid[select]
 
